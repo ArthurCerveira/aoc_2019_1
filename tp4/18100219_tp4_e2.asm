@@ -15,17 +15,27 @@
 .space 4
 
 .text 
-#instrucoes para pegar a($t1) na memoria
+# instrucoes para pegar a($t1) na memoria
 lui $t0, 0x1001 
 lw $t1, 0($t0)
-#metodo de horner
-addi $t7, $t7, 5
 
-mul $t2, $t7, $t1
-addi $t3, $t2, 7
-add $t7, $t7, $t3
+#guarda os valores necessarios
+addi $t2, $zero, 9
+addi $t3, $zero, 5
+addi $t4, $zero, 7
 
-addi $t4, $t2, 15
+# y = 9a^3 - 5a^2 + 7a + 15
+mul $t4, $t1, $t4
+
+mul $t6, $t1, $t1
+mul $t3, $t6, $t3
+
+mul $t6, $t1, $t6
+mul $t2, $t6, $t2
+
+sub $t7, $t2, $t3
 add $t7, $t7, $t4
+addi $t7, $t7, 15
+
 #guarda y na memoria
 sw $t7, 4($t0)
