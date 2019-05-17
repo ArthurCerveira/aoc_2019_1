@@ -11,7 +11,7 @@
 .text
 lui $t0, 0x1001 
 #carrega 333 para comparação
-ori $t1, $zero, 333
+ori $t1, $zero, 334
 #carrega 1 para controle
 ori $s0, $zero, 1
 #adiciona 1 ao controle e o resultado no total
