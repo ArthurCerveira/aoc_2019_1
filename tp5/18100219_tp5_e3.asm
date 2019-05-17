@@ -7,3 +7,25 @@
 # .data
 # x: .word 7
 # y: .space 4
+
+.data
+.word 7
+.space 4
+
+.text
+#carrega o valor de x
+lui $t0, 0x1001
+lw $t1, 0($t0)
+#carrega 1 para soma e 1 para controle
+ori $s0, $zero, 1
+ori $s3, $zero, 1
+#faz o calculo de fibonacci
+fib: or $s1, $s3, $zero
+beq $t1, $s0, fim
+add $s3, $s1, $s2
+or $s2, $zero, $s1
+addi $s0, $s0, 1
+j fib
+#guarda o resultado na memoria
+fim: sw $s1, 4($t0)
+
