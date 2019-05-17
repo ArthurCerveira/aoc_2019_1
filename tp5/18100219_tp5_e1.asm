@@ -7,3 +7,25 @@
 # a: .half 30
 # b: .half 5
 # y: .space 4
+
+.data
+.half 30
+.half 5
+.space 4
+
+.text
+#carrega os valores da memoria
+lui $t0, 0x1001
+lh $t1, 0($t0)
+lh $t2, 2($t0)
+
+#se sao iguais, pula para multi
+beq  $t1, $t2, multi
+#se sao diferentes continua a execucao
+div $t1, $t2
+mflo $t3
+#pula para o fim
+j fim
+multi: mul $t3, $t1, $t2
+# gaurda na memoria
+fim: sw $t3, 4($t0)
