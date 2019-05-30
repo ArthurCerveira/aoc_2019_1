@@ -4,3 +4,4 @@
 #intervalo fechado definido por $s0 e $s1. Assuma que $s0 ≤ $s1.
 #Utilize os registradores $s3 e $s4 apenas para armazenar o início e o tamanho do
 #vetor.
+
