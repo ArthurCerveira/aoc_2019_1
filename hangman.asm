@@ -11,6 +11,7 @@ numero_erros: .asciiz "\nnumero de erros: "
 ganhou_str: .asciiz "Voce ganhou"
 perdeu_str: .asciiz "Voce perdeu"
 palavra_aux: .asciiz "A palavra era "
+letra_rep: .asciiz "Letra nao pode ser repetida"
 
 .text
 # carrega enderecos das palavras nos registradores
@@ -49,6 +50,44 @@ ori $v0, $zero, 8
 or $a0, $zero, $t0
 ori $a1, $zero, 2
 syscall
+
+
+#=====================================
+# testa se a letra ja nao foi inserida
+#=====================================
+# recebe o endereco do input para percorre-lo
+or $t6, $zero, $s1
+# carrega o ultimo input
+lbu $t3, 0($t0)
+# testa se o endereco nao eh igual ao do proprio input
+loop_input:
+beq $t6, $t0, end_igual
+# carrega caractere do input
+lbu $t7, 0($t6)
+# compara caractere com input
+beq $t3, $t7, input_repetido
+j input_nao_repetido
+# se for igual, eh repetido
+input_repetido:
+# imprime o \n
+or $a0, $zero, $s3
+syscall
+# imprime aviso
+la $t7, letra_rep
+li $v0, 4 
+or $a0, $zero, $t7
+syscall
+# pula a comparacao
+j apos_compara
+# se nao for repetido vai para proximo caractere do input
+input_nao_repetido:
+addi $t6, $t6, 2
+# testa se eh null
+beq $t7, $zero, fim_input
+# senao repete o loop
+j loop_input
+fim_input: nop
+end_igual: nop
 
 
 #====================================
@@ -92,6 +131,7 @@ errou:
 addi $t9, $t9, 1
 # continua a execucao
 nao_errou: nop
+apos_compara: nop
 
 
 #========================
@@ -147,8 +187,10 @@ syscall
 li $v0, 1
 or $a0, $zero, $t9
 syscall
-# imprime o \n
+# quebra duas linhas para proxima rodada
 li $v0,4 
+or $a0, $zero, $s3
+syscall
 or $a0, $zero, $s3
 syscall
 
