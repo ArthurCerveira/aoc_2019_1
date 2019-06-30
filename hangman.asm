@@ -1,6 +1,5 @@
 .data
 palavra: .asciiz "tamandua"
-tamanho_palavra: .word 8
 input: .space 32
 resultado: .asciiz "_ _ _ _ _ _ _ _"
 # caracteres auxiliares
@@ -8,12 +7,15 @@ barra_n: .asciiz "\n"
 # strings auxiliares
 numero_acertos: .asciiz "\nnumero de acertos: "
 numero_erros: .asciiz "\nnumero de erros: "
-ganhou_str: .asciiz "Voce ganhou"
-perdeu_str: .asciiz "Voce perdeu"
+ganhou_str: .asciiz "Voce ganhou\n"
+perdeu_str: .asciiz "Voce perdeu\n"
 palavra_aux: .asciiz "A palavra era "
 letra_rep: .asciiz "Letra nao pode ser repetida"
 
 .text
+#=====================
+# configuracao inicial
+#=====================
 # carrega enderecos das palavras nos registradores
 la $s0, palavra
 la $s1, input
@@ -21,10 +23,6 @@ la $s2, resultado
 la $s3, barra_n
 la $s4, numero_acertos
 la $s5, numero_erros
-#carrega o tamanho da palavra em s6
-lw $s6, tamanho_palavra
-# carrega o numero maximo de erros em s7
-li $s7, 6
 # carrega a posicao de input em t0
 or $t0, $s1, $zero
 # carrega a posicao da palavra em t1
@@ -40,6 +38,27 @@ or $t8, $zero, $zero
 or $t9, $zero, $zero
 
 
+#===============================
+# determina o tamanho da palavra
+#===============================
+# inicializa o contador em 0
+li $s6, 0
+# carrega o caractere
+lenght:
+lbu $t3, 0($t1)
+# testa se eh null
+beq $t3, $zero, fim_lenght
+# se nao for, add +1 ao contador
+addi $s6, $s6, 1
+# vai para o proximo caractere
+addi $t1, $t1, 1
+#volta para o inicio do loop
+j lenght
+# t1 volta a apontar pro incio da string
+fim_lenght:
+or $t1, $zero, $s0
+
+
 jogo_inicio:
 #========================
 # recebe input do usuario
@@ -52,9 +71,9 @@ ori $a1, $zero, 2
 syscall
 
 
-#=====================================
-# testa se a letra ja nao foi inserida
-#=====================================
+#=================================
+# testa se a letra ja foi inserida
+#=================================
 # recebe o endereco do input para percorre-lo
 or $t6, $zero, $s1
 # carrega o ultimo input
@@ -201,7 +220,7 @@ syscall
 # testa se o numero de acertos eh igual ao tamanho da palavra
 beq $t8, $s6, ganhou
 # testa se o numero de erros eh igual ao numero maximo de erros
-beq $t9, $s7, perdeu
+beq $t9, 6, perdeu
 # senao volta para o inicio do jogo
 j jogo_inicio
 #se ganhou carrega mensagem de vitoria
@@ -215,13 +234,13 @@ fim_jogo:
 # imprime a mensagem
 or $a0, $zero, $s1
 syscall
-# imprime o \n
-or $a0, $zero, $s3
-syscall
 # carrega e imprime auxiliar da palavra
 la $s1, palavra_aux
 or $a0, $zero, $s1
 syscall
 # imprime a palavra original
 or $a0, $zero, $s0
+syscall
+# imprime o \n
+or $a0, $zero, $s3
 syscall
