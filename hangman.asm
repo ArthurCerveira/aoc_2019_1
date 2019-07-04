@@ -1,7 +1,7 @@
 .data
 palavra: .asciiz "tamandua"
 input: .space 32
-resultado: .asciiz "_ _ _ _ _ _ _ _"
+resultado: .space 32
 # caracteres auxiliares
 barra_n: .asciiz "\n"
 # strings auxiliares
@@ -11,6 +11,7 @@ ganhou_str: .asciiz "Voce ganhou\n"
 perdeu_str: .asciiz "Voce perdeu\n"
 palavra_aux: .asciiz "A palavra era "
 letra_rep: .asciiz "Letra nao pode ser repetida"
+insira_letra: .asciiz "Digite a letra: "
 
 .text
 #=====================
@@ -23,6 +24,7 @@ la $s2, resultado
 la $s3, barra_n
 la $s4, numero_acertos
 la $s5, numero_erros
+la $s7, insira_letra
 # carrega a posicao de input em t0
 or $t0, $s1, $zero
 # carrega a posicao da palavra em t1
@@ -59,11 +61,43 @@ fim_lenght:
 or $t1, $zero, $s0
 
 
+#===========================
+# cria a string do resultado
+#===========================
+# carrega underline nos registradores
+ori $t3, $zero, 95
+#inicializa o contador em 0
+or $t4, $zero, $zero
+loop_resultado:
+# coloca underline na string
+sb $t3, 0($t5)
+# vai para proxima posicao
+addi $t5, $t5, 1
+# coloca o espaco na string
+sb $t2, 0($t5)
+# vai para proxima posicao
+addi $t5, $t5, 1
+# adiciona +1 ao contador
+addi $t4, $t4, 1
+# testa se o contador eh igual ao tamanho da palavra
+beq $t4, $s6, fim_loop_resultado
+# senao for, volta pro inicio do loop
+j loop_resultado
+# se for, faz o t5 apontar de novo pro incio da string
+fim_loop_resultado:
+or $t5, $s2, $zero
+
+
 jogo_inicio:
 #========================
 # recebe input do usuario
 #========================
-# carrega codigo para syscall
+# carrega codigo de print para syscall
+ori $v0, $zero, 4
+# imprime a mensagem
+or $a0, $zero, $s7
+syscall
+# carrega codigo de input para syscall
 ori $v0, $zero, 8
 # carrega argumentos
 or $a0, $zero, $t0
