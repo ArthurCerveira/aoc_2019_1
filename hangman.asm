@@ -1,5 +1,5 @@
 .data
-palavra: .asciiz "tamandua"
+palavra: .asciiz "avestruz"
 input: .space 32
 resultado: .space 32
 # caracteres auxiliares
@@ -112,8 +112,8 @@ syscall
 or $t6, $zero, $s1
 # carrega o ultimo input
 lbu $t3, 0($t0)
-# testa se o endereco nao eh igual ao do proprio input
 loop_input:
+# testa se o endereco nao eh igual ao do proprio input
 beq $t6, $t0, end_igual
 # carrega caractere do input
 lbu $t7, 0($t6)
