@@ -1,5 +1,5 @@
 .data
-palavra: .asciiz "avestruz"
+palavra: .asciiz "luciano"
 input: .space 32
 resultado: .space 32
 # caracteres auxiliares
@@ -12,6 +12,7 @@ perdeu_str: .asciiz "Voce perdeu\n"
 palavra_aux: .asciiz "A palavra era "
 letra_rep: .asciiz "Letra nao pode ser repetida"
 insira_letra: .asciiz "Digite a letra: "
+input_grande: .asciiz "Digite apenas uma letra!"
 
 .text
 #=====================
@@ -22,7 +23,7 @@ la $s0, palavra
 la $s1, input
 la $s2, resultado
 la $s3, barra_n
-la $s4, numero_acertos
+la $s4, input_grande
 la $s5, numero_erros
 la $s7, insira_letra
 # carrega a posicao de input em t0
@@ -83,8 +84,12 @@ addi $t4, $t4, 1
 beq $t4, $s6, fim_loop_resultado
 # senao for, volta pro inicio do loop
 j loop_resultado
-# se for, faz o t5 apontar de novo pro incio da string
 fim_loop_resultado:
+# carrega o \n em t6
+li $t6, 10
+# coloca o \n na string
+sb $t6, 0($t5)
+# t5 apontar de novo pro incio da string
 or $t5, $s2, $zero
 
 
@@ -92,17 +97,18 @@ jogo_inicio:
 #========================
 # recebe input do usuario
 #========================
-# carrega codigo de print para syscall
-ori $v0, $zero, 4
-# imprime a mensagem
-or $a0, $zero, $s7
-syscall
 # carrega codigo de input para syscall
-ori $v0, $zero, 8
+ori $v0, $zero, 54
+# carrega a mensage em a0
+or $a0, $zero, $s7
 # carrega argumentos
-or $a0, $zero, $t0
-ori $a1, $zero, 2
+or $a1, $zero, $t0
+ori $a2, $zero, 2
 syscall
+# se cancelar, sai do jogo
+beq $a1, -2, cancel
+# se o input for grande, imprime aviso
+beq $a1, -4, input_longo
 
 
 #=================================
@@ -120,18 +126,6 @@ lbu $t7, 0($t6)
 # compara caractere com input
 beq $t3, $t7, input_repetido
 j input_nao_repetido
-# se for igual, eh repetido
-input_repetido:
-# imprime o \n
-or $a0, $zero, $s3
-syscall
-# imprime aviso
-la $t7, letra_rep
-li $v0, 4 
-or $a0, $zero, $t7
-syscall
-# pula a comparacao
-j apos_compara
 # se nao for repetido vai para proximo caractere do input
 input_nao_repetido:
 addi $t6, $t6, 2
@@ -197,27 +191,16 @@ sb $t2, 0($t0)
 addi $t0, $t0, 1
 
 
-#============================
-# imprime string do resultado
-#============================
-# imprime o \n
-li $v0,4 
-or $a0, $zero, $s3
-syscall
-# imprime a string
+#===============================================
+# imprime string do resultado e input do usuario
+#===============================================
+# carrega o valor no syscall
+li $v0, 59 
+# carrega a string resultado
 or $a0, $zero, $s2
-syscall
-
-
-#=========================
-# imprime input do usuario
-#=========================
-# imprime o \n
-li $v0,4 
-or $a0, $zero, $s3
-syscall
-# imprime a string
-or $a0, $zero, $s1
+# carrega string popup
+or $a1, $zero, $s1
+# chama pop up
 syscall
 
 
@@ -225,27 +208,27 @@ syscall
 # imprime mensagens auxiliares
 #=============================
 # imprime a msg de acertos
-li $v0, 4
-or $a0, $zero, $s4
-syscall
+# li $v0, 4
+# or $a0, $zero, $s4
+# syscall
 # imprime numero de acertos
-li $v0, 1
-or $a0, $zero, $t8
-syscall
+# li $v0, 1
+# or $a0, $zero, $t8
+# syscall
 # imprime a msg de erros
-li $v0, 4
-or $a0, $zero, $s5
-syscall
+# li $v0, 4
+# or $a0, $zero, $s5
+# syscall
 # imprime numero de erros
-li $v0, 1
-or $a0, $zero, $t9
-syscall
+# li $v0, 1
+# or $a0, $zero, $t9
+# syscall
 # quebra duas linhas para proxima rodada
-li $v0,4 
-or $a0, $zero, $s3
-syscall
-or $a0, $zero, $s3
-syscall
+# li $v0,4 
+# or $a0, $zero, $s3
+# syscall
+# or $a0, $zero, $s3
+# syscall
 
 
 #=======================
@@ -278,3 +261,26 @@ syscall
 # imprime o \n
 or $a0, $zero, $s3
 syscall
+j cancel
+
+
+#===============
+# trata excecoes
+#===============
+input_longo: 
+li $v0, 55
+move $a0, $s4
+li $a1, 1
+syscall
+j jogo_inicio
+
+input_repetido:
+# imprime aviso
+la $a0, letra_rep
+li $v0, 55
+li $a1, 1
+syscall
+# pula a comparacao
+j apos_compara
+
+cancel: nop
