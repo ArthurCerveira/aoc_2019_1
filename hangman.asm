@@ -13,6 +13,14 @@ palavra_aux: .asciiz "A palavra era "
 letra_rep: .asciiz "Letra nao pode ser repetida"
 insira_letra: .asciiz "Digite a letra: "
 input_grande: .asciiz "Digite apenas uma letra!"
+# hangman
+hang: .asciiz "____\n| \n|  \n|  "
+head: .asciiz "____\n|  O\n|  \n|  "
+body: .asciiz "____\n|  O\n|   |\n|"
+arm1: .asciiz "____\n|  O\n|  /|\n|"
+arm2: .asciiz "____\n|  O\n|  /|\\\n|"
+leg1: .asciiz "____\n|  O\n|  /|\\\n| /"
+leg2: .asciiz "____\n|  O\n|  /|\\\n| /\\"
 
 .text
 #=====================
@@ -106,9 +114,11 @@ or $a1, $zero, $t0
 ori $a2, $zero, 2
 syscall
 # se cancelar, sai do jogo
-beq $a1, -2, cancel
+beq $a1, -2, fim
 # se o input for grande, imprime aviso
 beq $a1, -4, input_longo
+# se nao digitar nada, volta para input
+beq $a1, -3, input_vazio
 
 
 #=================================
@@ -203,34 +213,47 @@ or $a1, $zero, $s1
 # chama pop up
 syscall
 
+#==============
+# monta a forca
+#==============
+forca:
+li $v0, 55
+la $a1, 1
+beq $t9, 1, cabeca
+beq $t9, 2, tronco
+beq $t9, 3, braco1
+beq $t9, 4, braco2
+beq $t9, 5, perna1
+beq $t9, 6, perna2
+la $a0, hang
+syscall
+j teste_fim
+cabeca:
+la $a0, head
+syscall
+j teste_fim
+tronco:
+la $a0, body
+syscall
+j teste_fim
+braco1:
+la $a0, arm1
+syscall
+j teste_fim
+braco2:
+la $a0, arm2
+syscall
+j teste_fim
+perna1:
+la $a0, leg1
+syscall
+j teste_fim
+perna2:
+la $a0, leg2
+syscall
+j teste_fim
 
-#=============================
-# imprime mensagens auxiliares
-#=============================
-# imprime a msg de acertos
-# li $v0, 4
-# or $a0, $zero, $s4
-# syscall
-# imprime numero de acertos
-# li $v0, 1
-# or $a0, $zero, $t8
-# syscall
-# imprime a msg de erros
-# li $v0, 4
-# or $a0, $zero, $s5
-# syscall
-# imprime numero de erros
-# li $v0, 1
-# or $a0, $zero, $t9
-# syscall
-# quebra duas linhas para proxima rodada
-# li $v0,4 
-# or $a0, $zero, $s3
-# syscall
-# or $a0, $zero, $s3
-# syscall
-
-
+teste_fim:
 #=======================
 # testa se o jogo acabou
 #=======================
@@ -249,19 +272,16 @@ perdeu:
 la $s1, perdeu_str
 fim_jogo:
 # imprime a mensagem
-or $a0, $zero, $s1
+li $v0, 55
+move $a0, $s1
 syscall
-# carrega e imprime auxiliar da palavra
-la $s1, palavra_aux
-or $a0, $zero, $s1
+# carrega auxiliar da palavra
+li $v0 59
+la $a0, palavra_aux
+# carrega a palavra original
+move $a1, $s0
 syscall
-# imprime a palavra original
-or $a0, $zero, $s0
-syscall
-# imprime o \n
-or $a0, $zero, $s3
-syscall
-j cancel
+j fim
 
 
 #===============
@@ -283,4 +303,8 @@ syscall
 # pula a comparacao
 j apos_compara
 
-cancel: nop
+input_vazio:
+# volta para o input
+j jogo_inicio
+
+fim: nop
